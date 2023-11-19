@@ -18,7 +18,7 @@ class OfferRepository:
                                 max_price: Optional[int] = None,
                                 min_power: Optional[float] = None,
                                 region: Optional[Bundesland] = None
-                                ) -> OfferGet:
+                                ) -> list[OfferGet]:
         offer = self.db.query(offers.Offer)
 
         if max_age:
@@ -29,12 +29,12 @@ class OfferRepository:
             offer = offer.filter(offers.Offer.power >= min_power)
         if region:
             offer = offer.filter(offers.Offer.region == region)
-        offer = offer.all()
+        offer_list = offer.all()
 
-        if not offer:
+        if not offer_list:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Offer not found for your selection")
 
-        return OfferGet(**offer.to_dict())
+        return [OfferGet(**offer.to_dict()) for offer in offer_list]
 
     def create_new_offer(self, offer: OfferPost) -> OfferGet:
         new_offer = offers.Offer(**offer.model_dump())
